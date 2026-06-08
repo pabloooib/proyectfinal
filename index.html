@@ -3229,25 +3229,14 @@ code.tag {
    FIX: loginWithGoogle corregido para GitHub Pages
    ══════════════════════════════════════════════ */
 
-// 1. TUS CREDENCIALES REALES (Las que me acabas de pasar)
 const firebaseConfig = {
-  apiKey: "AIzaSyCbHCVyIr5JYdtZrpZv2CrzmrcXc93U_HA",
-  authDomain: "proyectfinal-bf3e2.firebaseapp.com",
-  projectId: "proyectfinal-bf3e2",
-  storageBucket: "proyectfinal-bf3e2.firebasestorage.app",
-  messagingSenderId: "215955874047",
-  appId: "1:215955874047:web:c6291e9b5e4a9e46942cca",
-  measurementId: "G-CJYWT9P4PM"
+  apiKey:            "AIzaSyAVkLVB6xjp7dHLQ9sAaKjVpL6bPo9IZxw",
+  authDomain:        "souvreign-2f53b.firebaseapp.com",
+  projectId:         "souvreign-2f53b",
+  storageBucket:     "souvreign-2f53b.appspot.com",
+  messagingSenderId: "583221604697",
+  appId:             "1:583221604697:web:e35a4e02f37b573edd1edb"
 };
-
-// 2. INICIALIZACIÓN COMPATIBLE (Para que no rompa el resto de tu código)
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-// 3. ASIGNACIÓN DE VARIABLES GLOBALES
-const auth = firebase.auth();
-const db = firebase.firestore(); // Si usas Firestore, esto la activa con tus credenciales reales
 
 let app, auth, db, currentUser;
 let sidebarCollapsed = false;
@@ -3262,46 +3251,26 @@ try {
 
 /* ── Auth State ── */
 if (auth) {
-  auth.onAuthStateChanged(async (user) => { // <-- Agregamos async aquí
+  auth.onAuthStateChanged(user => {
     const loading = document.getElementById('loading-screen');
-    
+    loading.classList.add('fade-out');
+    setTimeout(() => { loading.style.display = 'none'; }, 800);
+
     if (user) {
       currentUser = user;
-      
-      // ESPERAR UN MOMENTO: Nos aseguramos de que el token de autenticación 
-      // esté completamente inyectado en la sesión antes de pedir datos a Firestore
-      try {
-        await user.getIdToken(true); 
-        
-        // Ahora que el token está listo, cargamos la aplicación de forma segura
-        showApp(user); 
-        
-      } catch (tokenError) {
-        console.error("Error al refrescar token:", tokenError);
-        showApp(user); // Intenta cargar igual si falla el refresco
-      }
-
+      showApp(user);
     } else {
-      currentUser = null;
       showLogin();
-    }
-
-    // Ocultamos la pantalla de carga DESPUÉS de haber procesado la sesión
-    if (loading) {
-      loading.classList.add('fade-out');
-      setTimeout(() => { loading.style.display = 'none'; }, 800);
     }
   });
 } else {
   setTimeout(() => {
     const loading = document.getElementById('loading-screen');
-    if (loading) {
-      loading.classList.add('fade-out');
-      setTimeout(() => {
-        loading.style.display = 'none';
-        showLogin();
-      }, 800);
-    }
+    loading.classList.add('fade-out');
+    setTimeout(() => {
+      loading.style.display = 'none';
+      showLogin();
+    }, 800);
   }, 1800);
 }
 
