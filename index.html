@@ -3229,14 +3229,25 @@ code.tag {
    FIX: loginWithGoogle corregido para GitHub Pages
    ══════════════════════════════════════════════ */
 
+// 1. TUS CREDENCIALES REALES (Las que me acabas de pasar)
 const firebaseConfig = {
-  apiKey:            "AIzaSyAVkLVB6xjp7dHLQ9sAaKjVpL6bPo9IZxw",
-  authDomain:        "souvreign-2f53b.firebaseapp.com",
-  projectId:         "souvreign-2f53b",
-  storageBucket:     "souvreign-2f53b.appspot.com",
-  messagingSenderId: "583221604697",
-  appId:             "1:583221604697:web:e35a4e02f37b573edd1edb"
+  apiKey: "AIzaSyCbHCVyIr5JYdtZrpZv2CrzmrcXc93U_HA",
+  authDomain: "proyectfinal-bf3e2.firebaseapp.com",
+  projectId: "proyectfinal-bf3e2",
+  storageBucket: "proyectfinal-bf3e2.firebasestorage.app",
+  messagingSenderId: "215955874047",
+  appId: "1:215955874047:web:c6291e9b5e4a9e46942cca",
+  measurementId: "G-CJYWT9P4PM"
 };
+
+// 2. INICIALIZACIÓN COMPATIBLE (Para que no rompa el resto de tu código)
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+// 3. ASIGNACIÓN DE VARIABLES GLOBALES
+const auth = firebase.auth();
+const db = firebase.firestore(); // Si usas Firestore, esto la activa con tus credenciales reales
 
 let app, auth, db, currentUser;
 let sidebarCollapsed = false;
