@@ -3225,94 +3225,29 @@ function showLogin() {
 }
 
 /* ── Auth Functions ── */
-async function loginWithEmail(e) {
-  if (e) e.preventDefault();
-  const email    = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const btn      = document.getElementById('login-btn');
-  const errEl    = document.getElementById('login-error');
-
-  errEl.classList.remove('show');
-
-  if (!email || !password) { showLoginError('Please fill in all fields.'); return; }
-
-  btn.disabled     = true;
-  btn.textContent  = 'Entering...';
-
-  try {
-    if (!auth) throw new Error('Firebase not configured');
-    const cred = await auth.signInWithEmailAndPassword(email, password);
-    currentUser = cred.user;
-    showApp(cred.user);
-  } catch (err) {
-    const msgs = {
-      'auth/user-not-found':    'No account found with this email.',
-      'auth/wrong-password':    'Incorrect password.',
-      'auth/invalid-email':     'Invalid email address.',
-      'auth/too-many-requests': 'Too many attempts. Try again later.',
-      'auth/invalid-credential':'Invalid credentials. Check email and password.',
-    };
-    showLoginError(msgs[err.code] || 'Authentication failed. Check your credentials.');
-  } finally {
-    btn.disabled    = false;
-    btn.textContent = 'Enter the Realm';
-  }
-}
-
 async function loginWithGoogle(e) {
-  if (e) e.preventDefault(); // Detiene cualquier refresco de página que rompa el flujo
+  if (e) e.preventDefault(); // Evita que la página se reinicie y rompa el flujo
   
   if (!auth) {
     showToast('Modo Demostración', 'Firebase no configurado...', 'info');
     return;
   }
 
-  // 1. Instanciar el proveedor de Google de la manera correcta para la versión Compat
+  // Configurar el proveedor de Google
   const provider = new firebase.auth.GoogleAuthProvider();
   
-  // 2. Forzar a que siempre pida seleccionar la cuenta de Google (evita bloqueos de caché locales)
+  // Forzar a que siempre te deje elegir la cuenta de Gmail
   provider.setCustomParameters({
     prompt: 'select_account'
   });
 
   try {
-    // 3. Forzar el inicio de sesión a través de una ventana emergente limpia (Popup)
+    // Usamos el Popup que en GitHub Pages funciona de maravilla si el dominio está autorizado
     const result = await auth.signInWithPopup(provider);
-    
-    // El observador onAuthStateChanged que tenés configurado se encargará de pasar al App Shell
     showToast('¡Bienvenido!', `Sesión iniciada como ${result.user.displayName}`, 'success');
-
   } catch (error) {
-    console.error("Error detectado en Google Login:", error);
-    
-    // Si por alguna razón la API Key local se pone necia, usamos el método alternativo automático
-    if (error.code === 'auth/api-key-expired' || error.message.includes('API_KEY')) {
-      try {
-        await auth.signInWithRedirect(provider);
-      } catch (redirectError) {
-        showToast('Error de Permisos', 'La API Key de Firebase sigue rechazando la conexión local.', 'error');
-      }
-    } else {
-      showToast('Error de Autenticación', error.message, 'error');
-    }
-  }
-}
-function showLoginError(msg) {
-  const el = document.getElementById('login-error');
-  el.textContent = msg;
-  el.classList.add('show');
-}
-
-function logout() {
-  if (auth) {
-    auth.signOut().then(() => {
-      currentUser = null;
-      showLogin();
-      showToast('Signed Out', 'You have left the realm.', 'warning');
-    });
-  } else {
-    showLogin();
-    showToast('Signed Out', 'You have left the realm.', 'warning');
+    console.error("Error en Google Login:", error);
+    showToast('Error de Autenticación', error.message, 'error');
   }
 }
 
