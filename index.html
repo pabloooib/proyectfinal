@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -3260,20 +3259,44 @@ async function loginWithEmail(e) {
   }
 }
 
-async function loginWithGoogle() {
+async function loginWithGoogle(e) {
+  if (e) e.preventDefault(); // Detiene cualquier refresco de página que rompa el flujo
+  
+  if (!auth) {
+    showToast('Modo Demostración', 'Firebase no configurado...', 'info');
+    return;
+  }
+
+  // 1. Instanciar el proveedor de Google de la manera correcta para la versión Compat
+  const provider = new firebase.auth.GoogleAuthProvider();
+  
+  // 2. Forzar a que siempre pida seleccionar la cuenta de Google (evita bloqueos de caché locales)
+  provider.setCustomParameters({
+    prompt: 'select_account'
+  });
+
   try {
-    if (!auth) throw new Error('Firebase not configured');
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const result   = await auth.signInWithPopup(provider);
-    currentUser    = result.user;
-    showApp(result.user);
-  } catch (err) {
-    if (err.code !== 'auth/popup-closed-by-user') {
-      showLoginError('Google sign-in failed. Try again.');
+    // 3. Forzar el inicio de sesión a través de una ventana emergente limpia (Popup)
+    const result = await auth.signInWithPopup(provider);
+    
+    // El observador onAuthStateChanged que tenés configurado se encargará de pasar al App Shell
+    showToast('¡Bienvenido!', `Sesión iniciada como ${result.user.displayName}`, 'success');
+
+  } catch (error) {
+    console.error("Error detectado en Google Login:", error);
+    
+    // Si por alguna razón la API Key local se pone necia, usamos el método alternativo automático
+    if (error.code === 'auth/api-key-expired' || error.message.includes('API_KEY')) {
+      try {
+        await auth.signInWithRedirect(provider);
+      } catch (redirectError) {
+        showToast('Error de Permisos', 'La API Key de Firebase sigue rechazando la conexión local.', 'error');
+      }
+    } else {
+      showToast('Error de Autenticación', error.message, 'error');
     }
   }
 }
-
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
   el.textContent = msg;
