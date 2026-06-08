@@ -3251,26 +3251,46 @@ try {
 
 /* ── Auth State ── */
 if (auth) {
-  auth.onAuthStateChanged(user => {
+  auth.onAuthStateChanged(async (user) => { // <-- Agregamos async aquí
     const loading = document.getElementById('loading-screen');
-    loading.classList.add('fade-out');
-    setTimeout(() => { loading.style.display = 'none'; }, 800);
-
+    
     if (user) {
       currentUser = user;
-      showApp(user);
+      
+      // ESPERAR UN MOMENTO: Nos aseguramos de que el token de autenticación 
+      // esté completamente inyectado en la sesión antes de pedir datos a Firestore
+      try {
+        await user.getIdToken(true); 
+        
+        // Ahora que el token está listo, cargamos la aplicación de forma segura
+        showApp(user); 
+        
+      } catch (tokenError) {
+        console.error("Error al refrescar token:", tokenError);
+        showApp(user); // Intenta cargar igual si falla el refresco
+      }
+
     } else {
+      currentUser = null;
       showLogin();
+    }
+
+    // Ocultamos la pantalla de carga DESPUÉS de haber procesado la sesión
+    if (loading) {
+      loading.classList.add('fade-out');
+      setTimeout(() => { loading.style.display = 'none'; }, 800);
     }
   });
 } else {
   setTimeout(() => {
     const loading = document.getElementById('loading-screen');
-    loading.classList.add('fade-out');
-    setTimeout(() => {
-      loading.style.display = 'none';
-      showLogin();
-    }, 800);
+    if (loading) {
+      loading.classList.add('fade-out');
+      setTimeout(() => {
+        loading.style.display = 'none';
+        showLogin();
+      }, 800);
+    }
   }, 1800);
 }
 
