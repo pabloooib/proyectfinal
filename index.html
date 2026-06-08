@@ -3226,7 +3226,8 @@ function showLogin() {
 }
 
 /* ── Auth Functions ── */
-async function loginWithEmail() {
+async function loginWithEmail(e) {
+  if (e) e.preventDefault();
   const email    = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
   const btn      = document.getElementById('login-btn');
